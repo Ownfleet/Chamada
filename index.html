@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Escala • Rotas por Portão</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Supabase v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SheetJS para ler o .xlsx -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --primary: #ff5722;
+      --primary-dark: #e14d1f;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --text: #111827;
+      --muted: #6b7280;
+      --used: #9ca3af;
+      --chip-bg: #f3f4ff;
+      --odd-bg: #fee2e2;
+      --even-bg: #dcfce7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #ffe4d6, #f3f4f6);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1280px;
+      width: 100%;
+      background: rgba(255,255,255,0.9);
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(15,23,42,0.15);
+      padding: 20px 22px 22px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .app-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .app-title h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #fff7ed;
+      color: var(--primary-dark);
+      border: 1px solid #fed7aa;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .app-title span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .app-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card);
+      color: var(--text);
+      transition: all 0.18s ease;
+      box-shadow: 0 0 0 0 transparent;
+    }
+
+    .btn span.icon {
+      font-size: 0.9rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 10px 18px rgba(248,113,113,0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(248,113,113,0.38);
+    }
+
+    .btn-outline {
+      border-color: var(--border);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      box-shadow: 0 6px 14px rgba(15,23,42,0.08);
+    }
+
+    .btn-danger {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      border-color: var(--danger);
+      box-shadow: 0 6px 14px rgba(248,113,113,0.28);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.6fr 1.1fr;
+      gap: 12px;
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .panel-header h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .panel-header span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .upload-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .file-label {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      border-radius: 999px;
+      border: 1px dashed var(--border);
+      background: #f9fafb;
+      color: var(--muted);
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-line {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      background: #ecfdf5;
+      color: var(--success);
+      border-radius: 999px;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-pill.error {
+      background: #fef2f2;
+      color: var(--danger);
+      border-color: #fecaca;
+    }
+
+    .grid-rotas {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      flex: 1;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .col-letter {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .col-letter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 4px;
+    }
+
+    .col-letter-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .col-letter-count {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .rota-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+      overflow: auto;
+    }
+
+    .rota-card {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      padding: 4px 6px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 6px;
+      align-items: center;
+      font-size: 0.75rem;
+      transition: background 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+    }
+
+    .rota-card.used {
+      background: #f3f4f6;
+      border-style: dashed;
+      border-color: #d1d5db;
+      opacity: 0.65;
+    }
+
+    .rota-check {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rota-check input {
+      accent-color: var(--primary);
+    }
+
+    .rota-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .rota-title {
+      font-weight: 600;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .rota-title span.code {
+      font-size: 0.78rem;
+    }
+
+    .badge-paridade {
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 500;
+    }
+
+    .badge-par {
+      background: var(--even-bg);
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+    }
+
+    .badge-impar {
+      background: var(--odd-bg);
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+
+    .rota-sub {
+      font-size: 0.7rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rota-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: flex-end;
+    }
+
+    .btn-chip {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 1px 7px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      background: #f9fafb;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-chip:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: #fff7ed;
+    }
+
+    .btn-chip:disabled {
+      opacity: 0.5;
+      cursor: default;
+      border-style: dashed;
+    }
+
+    .pill-portao {
+      font-size: 0.68rem;
+      border-radius: 999px;
+      padding: 1px 6px;
+      color: var(--muted);
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+    }
+
+    .pill-portao.p1 {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .pill-portao.p2 {
+      border-color: #fed7aa;
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    .portoes-body {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .portao-card {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 8px;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 0;
+    }
+
+    .portao-card h3 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .portao-lines {
+      margin-top: 2px;
+      flex: 1;
+      overflow: auto;
+      font-size: 0.72rem;
+      line-height: 1.3;
+      padding-right: 2px;
+    }
+
+    .portao-tag {
+      display: inline-flex;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      margin: 2px 2px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+      margin-top: 2px;
+    }
+
+    .shortcut {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .kbd {
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      padding: 1px 5px;
+      background: #f9fafb;
+      font-size: 0.68rem;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    /* Modal simples */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      width: 320px;
+      max-width: calc(100% - 40px);
+      box-shadow: 0 18px 45px rgba(15,23,42,0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .modal p {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 0.78rem;
+    }
+
+    .radio-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: #f9fafb;
+    }
+
+    .radio-item input {
+      accent-color: var(--primary);
+    }
+
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .grid-rotas {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+      .app {
+        padding: 14px;
+      }
+      .grid-rotas {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-title">
+        <h1>
+          Escala de Rotas
+          <span class="tag"><span>JD ADRIANA</span> • Bancadas A–Z</span>
+        </h1>
+        <span>Importa base (.xlsx) → salva no Supabase → organiza A-Z → copia por Portão 1 / Portão 2.</span>
+      </div>
+      <div class="app-header-actions">
+        <button class="btn btn-outline" id="btn-reload">
+          <span class="icon">⟳</span> Atualizar dados
+        </button>
+        <button class="btn btn-danger" id="btn-clear">
+          <span class="icon">🗑</span> Limpar base
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- Painel Esquerdo: Importação + Rotas -->
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Base de Motoristas &amp; Rotas</h2>
+            <span>Importe o arquivo <strong>BASE _Escala.xlsx</strong> (ID, DRIVER NAME, ROTA)</span>
+          </div>
+          <div class="upload-group">
+            <div class="file-input-wrapper">
+              <label class="file-label">
+                <span class="icon">📂</span> Escolher arquivo .xlsx
+              </label>
+              <input type="file" id="file-input" accept=".xlsx,.xls">
+            </div>
+            <button class="btn btn-primary" id="btn-import" disabled>
+              <span class="icon">⬆</span> Importar &amp; salvar no Supabase
+            </button>
+          </div>
+        </div>
+
+        <div class="status-line">
+          <span id="status-text">Nenhum arquivo selecionado.</span>
+          <span id="status-pill" class="status-pill" style="display:none;"></span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
+          <span style="font-size:0.75rem; color:var(--muted);">
+            <strong id="total-rotas">0</strong> rotas carregadas
+          </span>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button class="btn btn-outline" id="btn-copy-selected" disabled>
+              <span class="icon">📋</span> Copiar selecionadas
+            </button>
+            <button class="btn btn-outline" id="btn-revalidar">
+              <span class="icon">✅</span> Revalidar todas
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-rotas" id="grid-rotas">
+          <!-- colunas A, B, C... vão aqui via JS -->
+        </div>
+      </section>
+
+      <!-- Painel Direito: Portões -->
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Portões &amp; Letras copiadas</h2>
+            <span>Defina para qual portão vão as letras copiadas. Ao copiar, a letra fica cinza.</span>
+          </div>
+        </div>
+
+        <div class="portoes-body">
+          <div class="portao-card">
+            <h3>Portão 1</h3>
+            <div class="portao-lines" id="portao-1-lines">
+              <span style="font-size:0.72rem; color:var(--muted);">Nenhuma letra enviada ainda.</span>
+            </div>
+          </div>
+          <div class="portao-card">
+            <h3>Portão 2</h3>
+            <div class="portao-lines" id="portao-2-lines">
+              <span style="font-size:0.72rem; color:var(--muted);">Nenhuma letra enviada ainda.</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <span>Impar = <span style="color:var(--danger); font-weight:500;">vermelho</span> • Par = <span style="color:var(--success); font-weight:500;">verde</span></span>
+          <span class="shortcut">
+            <span class="kbd">Ctrl</span><span>+</span><span class="kbd">F</span><span> busca motorista/rota</span>
+          </span>
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal de escolha de portão -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal">
+      <h3>Enviar letras para qual portão?</h3>
+      <p>As letras selecionadas serão copiadas para a área de transferência e marcadas como usadas.</p>
+      <div class="radio-group">
+        <label class="radio-item">
+          <input type="radio" name="portao" value="1" checked> Portão 1
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="portao" value="2"> Portão 2
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btn-cancel-modal">Cancelar</button>
+        <button class="btn btn-primary" id="btn-confirm-modal">Confirmar &amp; copiar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================
+    // CONFIGURAÇÃO SUPABASE
+    // ==========================
+    const SUPABASE_URL = "https://rtuxwydhgucdqbmyuhbt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dXh3eWRoZ3VjZHFibXl1aGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MTQyOTEsImV4cCI6MjA3NTM5MDI5MX0._69KQdPbipke-jVmF_UEO3VAYaiEqpa1h81jUVTN684";
+
+    const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
+    },
+    db: { schema: "public" },
+    global: {
+      headers: {
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    }
+  }
+);
+
+    // ==========================
+    // ESTADO GLOBAL
+    // ==========================
+    let currentRowsFromFile = []; // lido do .xlsx antes de enviar
+    let rotasDB = [];             // vindo do Supabase
+    let pendingCopyIds = [];      // ids que vão para o modal
+
+    const fileInput = document.getElementById("file-input");
+    const btnImport = document.getElementById("btn-import");
+    const btnReload = document.getElementById("btn-reload");
+    const btnClear = document.getElementById("btn-clear");
+    const btnCopySelected = document.getElementById("btn-copy-selected");
+    const btnRevalidar = document.getElementById("btn-revalidar");
+    const statusText = document.getElementById("status-text");
+    const statusPill = document.getElementById("status-pill");
+    const gridRotas = document.getElementById("grid-rotas");
+    const totalRotasEl = document.getElementById("total-rotas");
+
+    const modalBackdrop = document.getElementById("modal-backdrop");
+    const btnCancelModal = document.getElementById("btn-cancel-modal");
+    const btnConfirmModal = document.getElementById("btn-confirm-modal");
+
+    const portao1Lines = document.getElementById("portao-1-lines");
+    const portao2Lines = document.getElementById("portao-2-lines");
+
+    // ==========================
+    // HELPERS
+    // ==========================
+    function showStatus(message, type = "info") {
+      statusText.textContent = message;
+      if (type === "success") {
+        statusPill.style.display = "inline-flex";
+        statusPill.textContent = "OK";
+        statusPill.className = "status-pill";
+      } else if (type === "error") {
+        statusPill.style.display = "inline-flex";
+        statusPill.textContent = "Erro";
+        statusPill.className = "status-pill error";
+      } else {
+        statusPill.style.display = "none";
+      }
+    }
+
+    function parseRota(rotaRaw) {
+      if (!rotaRaw) return { letter: "?", num: NaN };
+      const parts = rotaRaw.toString().trim().split("-");
+      const letter = parts[0]?.trim().toUpperCase() || "?";
+      const num = parts[1] ? parseInt(parts[1], 10) : NaN;
+      return { letter, num };
+    }
+
+    function groupByLetter(data) {
+      const map = {};
+      data.forEach(r => {
+        const { letter, num } = parseRota(r.rota);
+        if (!map[letter]) map[letter] = [];
+        map[letter].push({ ...r, letter, num });
+      });
+      // ordenar cada grupo por número
+      Object.keys(map).forEach(letter => {
+        map[letter].sort((a, b) => (a.num || 0) - (b.num || 0));
+      });
+      return map;
+    }
+
+    function renderPortoes() {
+      const p1 = rotasDB.filter(r => r.portao === 1 && r.usado);
+      const p2 = rotasDB.filter(r => r.portao === 2 && r.usado);
+
+      function renderList(element, list) {
+        if (!list.length) {
+          element.innerHTML = '<span style="font-size:0.72rem; color:var(--muted);">Nenhuma letra enviada ainda.</span>';
+          return;
+        }
+        element.innerHTML = "";
+        list.forEach(item => {
+          const { letter, num } = parseRota(item.rota);
+          const span = document.createElement("span");
+          span.className = "portao-tag";
+          span.textContent = `${letter}-${num} • ${item.motorista_nome}`;
+          element.appendChild(span);
+        });
+      }
+
+      renderList(portao1Lines, p1);
+      renderList(portao2Lines, p2);
+    }
+
+    function renderRotas() {
+      const groups = groupByLetter(rotasDB);
+      const lettersSorted = Object.keys(groups).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+      gridRotas.innerHTML = "";
+
+      if (!lettersSorted.length) {
+        gridRotas.innerHTML = '<span style="font-size:0.8rem; color:var(--muted);">Nenhuma rota encontrada no Supabase. Importe a base para começar.</span>';
+        totalRotasEl.textContent = "0";
+        btnCopySelected.disabled = true;
+        return;
+      }
+
+      totalRotasEl.textContent = rotasDB.length.toString();
+      btnCopySelected.disabled = false;
+
+      lettersSorted.forEach(letter => {
+        const col = document.createElement("div");
+        col.className = "col-letter";
+
+        const header = document.createElement("div");
+        header.className = "col-letter-header";
+
+        const title = document.createElement("div");
+        title.className = "col-letter-title";
+        title.innerHTML = `<span style="font-size:0.85rem;">Letra</span> <span style="font-size:1rem;">${letter}</span>`;
+
+        const count = document.createElement("span");
+        count.className = "col-letter-count";
+        count.textContent = `${groups[letter].length} rota(s)`;
+
+        header.appendChild(title);
+        header.appendChild(count);
+        col.appendChild(header);
+
+        const list = document.createElement("div");
+        list.className = "rota-list";
+
+        groups[letter].forEach(item => {
+          const { num } = item;
+          const isPar = !isNaN(num) && num % 2 === 0;
+          const isImpar = !isNaN(num) && num % 2 !== 0;
+
+          const card = document.createElement("div");
+          card.className = "rota-card";
+          if (item.usado) card.classList.add("used");
+
+          // checkbox
+          const checkWrapper = document.createElement("div");
+          checkWrapper.className = "rota-check";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.dataset.id = item.id;
+          checkbox.disabled = item.usado;
+          checkWrapper.appendChild(checkbox);
+
+          // parte principal
+          const main = document.createElement("div");
+          main.className = "rota-main";
+
+          const titleLine = document.createElement("div");
+          titleLine.className = "rota-title";
+
+          const codeSpan = document.createElement("span");
+          codeSpan.className = "code";
+          codeSpan.textContent = `${item.roteLabel || ""}${letter}-${isNaN(num) ? "?" : num}`;
+
+          const parityBadge = document.createElement("span");
+          parityBadge.className = "badge-paridade " + (isPar ? "badge-par" : "badge-impar");
+          parityBadge.textContent = isPar ? "Par" : "Ímpar";
+
+          titleLine.appendChild(codeSpan);
+          titleLine.appendChild(parityBadge);
+          main.appendChild(titleLine);
+
+          const sub = document.createElement("div");
+          sub.className = "rota-sub";
+          sub.textContent = item.motorista_nome;
+          main.appendChild(sub);
+
+          // ações
+          const actions = document.createElement("div");
+          actions.className = "rota-actions";
+
+          const singleCopyBtn = document.createElement("button");
+          singleCopyBtn.className = "btn-chip";
+          singleCopyBtn.textContent = "Copiar";
+          if (item.usado) singleCopyBtn.disabled = true;
+
+          singleCopyBtn.addEventListener("click", () => {
+            pendingCopyIds = [item.id];
+            openModal();
+          });
+
+          actions.appendChild(singleCopyBtn);
+
+          if (item.usado && item.portao) {
+            const pill = document.createElement("span");
+            pill.className = "pill-portao " + (item.portao === 1 ? "p1" : "p2");
+            pill.textContent = "Portão " + item.portao;
+            actions.appendChild(pill);
+          }
+
+          card.appendChild(checkWrapper);
+          card.appendChild(main);
+          card.appendChild(actions);
+
+          list.appendChild(card);
+        });
+
+        col.appendChild(list);
+        gridRotas.appendChild(col);
+      });
+
+      attachGlobalCheckboxListener();
+      renderPortoes();
+    }
+
+    function attachGlobalCheckboxListener() {
+      const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
+      checkboxes.forEach(cb => {
+        cb.addEventListener("change", () => {
+          const anyChecked = Array.from(checkboxes).some(c => c.checked);
+          btnCopySelected.disabled = !anyChecked;
+        });
+      });
+    }
+
+    // ==========================
+    // MODAL (Portão)
+    // ==========================
+    function openModal() {
+      modalBackdrop.classList.add("active");
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove("active");
+      pendingCopyIds = [];
+    }
+
+    btnCancelModal.addEventListener("click", () => {
+      closeModal();
+    });
+
+    btnConfirmModal.addEventListener("click", async () => {
+      const selectedPortao = document.querySelector("input[name='portao']:checked")?.value;
+      const portao = parseInt(selectedPortao, 10) || 1;
+      if (!pendingCopyIds.length) {
+        closeModal();
+        return;
+      }
+      await handleCopy(pendingCopyIds, portao);
+      closeModal();
+    });
+
+    // ==========================
+    // AÇÕES PRINCIPAIS
+    // ==========================
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) {
+        showStatus("Nenhum arquivo selecionado.");
+        btnImport.disabled = true;
+        currentRowsFromFile = [];
+        return;
+      }
+      if (!file.name.toLowerCase().endsWith(".xlsx") && !file.name.toLowerCase().endsWith(".xls")) {
+        showStatus("Selecione um arquivo .xlsx ou .xls.", "error");
+        btnImport.disabled = true;
+        fileInput.value = "";
+        currentRowsFromFile = [];
+        return;
+      }
+
+      showStatus(`Arquivo selecionado: ${file.name}`);
+      btnImport.disabled = false;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const data = evt.target.result;
+        const workbook = XLSX.read(data, { type: "binary" });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        // Espera colunas: ID, DRIVER NAME, ROTA
+        currentRowsFromFile = json
+          .filter(row => row["ID"] && row["ROTA"])
+          .map(row => ({
+            motorista_id: row["ID"].toString().trim(),
+            motorista_nome: (row["DRIVER NAME"] || "").toString().trim(),
+            rota: row["ROTA"].toString().trim()
+          }));
+
+        showStatus(`Arquivo lido: ${currentRowsFromFile.length} linhas válidas.`);
+      };
+      reader.readAsBinaryString(file);
+    });
+
+    btnImport.addEventListener("click", async () => {
+      if (!currentRowsFromFile.length) {
+        showStatus("Nenhuma linha válida encontrada no arquivo.", "error");
+        return;
+      }
+
+      btnImport.disabled = true;
+      showStatus("Enviando base para o Supabase...");
+
+      const { data, error } = await supabase
+        .from("rotas_importadas")
+        .insert(currentRowsFromFile);
+
+      if (error) {
+        console.error(error);
+        showStatus("Erro ao salvar no Supabase: " + error.message, "error");
+        btnImport.disabled = false;
+        return;
+      }
+
+      showStatus("Base importada com sucesso!", "success");
+      fileInput.value = "";
+      btnImport.disabled = true;
+      currentRowsFromFile = [];
+
+      await loadRotasFromDB();
+    });
+
+    async function loadRotasFromDB() {
+      showStatus("Carregando rotas do Supabase...");
+      const { data, error } = await supabase
+        .from("rotas_importadas")
+        .select("*")
+        .order("rota", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        showStatus("Erro ao carregar rotas: " + error.message, "error");
+        return;
+      }
+
+      rotasDB = (data || []).map(r => ({
+        ...r,
+        portao: r.portao === null ? null : Number(r.portao)
+      }));
+
+      showStatus("Rotas carregadas do Supabase.", "success");
+      renderRotas();
+    }
+
+    btnReload.addEventListener("click", () => {
+      loadRotasFromDB();
+    });
+
+    btnClear.addEventListener("click", async () => {
+      if (!confirm("Tem certeza que deseja limpar TODA a base de rotas? Essa ação não pode ser desfeita.")) {
+        return;
+      }
+      showStatus("Limpando tabela no Supabase...");
+      const { error } = await supabase
+        .from("rotas_importadas")
+        .delete()
+        .neq("id", 0);
+
+      if (error) {
+        console.error(error);
+        showStatus("Erro ao limpar base: " + error.message, "error");
+        return;
+      }
+
+      rotasDB = [];
+      renderRotas();
+      showStatus("Base limpa com sucesso.", "success");
+    });
+
+    btnRevalidar.addEventListener("click", async () => {
+      if (!rotasDB.length) return;
+      if (!confirm("Revalidar todas as letras? Todas voltarão a ficar disponíveis para copiar.")) {
+        return;
+      }
+      showStatus("Revalidando letras...");
+      const { error } = await supabase
+        .from("rotas_importadas")
+        .update({ usado: false, portao: null })
+        .neq("id", 0);
+
+      if (error) {
+        console.error(error);
+        showStatus("Erro ao revalidar letras: " + error.message, "error");
+        return;
+      }
+
+      rotasDB = rotasDB.map(r => ({ ...r, usado: false, portao: null }));
+      renderRotas();
+      showStatus("Todas as letras foram revalidadas.", "success");
+    });
+
+    btnCopySelected.addEventListener("click", () => {
+      const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
+      const selectedIds = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => parseInt(cb.dataset.id, 10));
+
+      if (!selectedIds.length) return;
+      pendingCopyIds = selectedIds;
+      openModal();
+    });
+
+    async function handleCopy(ids, portao) {
+      const itens = rotasDB.filter(r => ids.includes(r.id));
+      if (!itens.length) return;
+
+      const texto = itens
+        .map(r => {
+          const { letter, num } = parseRota(r.rota);
+          return `${letter}-${isNaN(num) ? "?" : num} • ${r.motorista_nome}`;
+        })
+        .join("\n");
+
+      try {
+        await navigator.clipboard.writeText(texto);
+      } catch (err) {
+        console.warn("Falha ao copiar para a área de transferência:", err);
+        alert("Não consegui copiar automaticamente. Mas as letras já foram marcadas como usadas.");
+      }
+
+      const { error } = await supabase
+        .from("rotas_importadas")
+        .update({ usado: true, portao: portao })
+        .in("id", ids);
+
+      if (error) {
+        console.error(error);
+        showStatus("Erro ao marcar letras como usadas: " + error.message, "error");
+        return;
+      }
+
+      rotasDB = rotasDB.map(r => (
+        ids.includes(r.id)
+          ? { ...r, usado: true, portao }
+          : r
+      ));
+
+      const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
+      checkboxes.forEach(cb => {
+        if (ids.includes(parseInt(cb.dataset.id, 10))) {
+          cb.checked = false;
+        }
+      });
+
+      renderRotas();
+      showStatus(`Copiado para Portão ${portao}. Letras marcadas como usadas.`, "success");
+    }
+
+    // Carregar dados logo que abrir a página
+    loadRotasFromDB();
+  </script>
+</body>
+</html>

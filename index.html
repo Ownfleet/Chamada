@@ -124,6 +124,7 @@
       color: var(--text);
       transition: all 0.18s ease;
       box-shadow: 0 0 0 0 transparent;
+      white-space: nowrap;
     }
 
     .btn span.icon {
@@ -234,6 +235,7 @@
       display: inline-flex;
       gap: 6px;
       align-items: center;
+      white-space: nowrap;
     }
 
     .status-line {
@@ -313,15 +315,15 @@
       overflow: auto;
     }
 
+    /* CARD DA ROTA – corrigido para o botão "Copiar" ficar bonito */
     .rota-card {
       background: #ffffff;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
       padding: 4px 6px;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 6px;
+      display: flex;
       align-items: center;
+      gap: 8px;
       font-size: 0.75rem;
       transition: background 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
     }
@@ -337,6 +339,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .rota-check input {
@@ -347,6 +350,8 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      flex: 1;
+      min-width: 0; /* permite o ellipsis funcionar */
     }
 
     .rota-title {
@@ -358,6 +363,7 @@
 
     .rota-title span.code {
       font-size: 0.78rem;
+      white-space: nowrap;
     }
 
     .badge-paridade {
@@ -365,6 +371,7 @@
       border-radius: 999px;
       font-size: 0.68rem;
       font-weight: 500;
+      white-space: nowrap;
     }
 
     .badge-par {
@@ -392,12 +399,13 @@
       flex-direction: column;
       gap: 2px;
       align-items: flex-end;
+      flex-shrink: 0;
     }
 
     .btn-chip {
       border-radius: 999px;
       border: 1px solid var(--border);
-      padding: 1px 7px;
+      padding: 1px 8px;
       font-size: 0.68rem;
       font-weight: 500;
       background: #f9fafb;
@@ -406,6 +414,7 @@
       align-items: center;
       gap: 4px;
       transition: all 0.15s ease;
+      white-space: nowrap;
     }
 
     .btn-chip:hover {
@@ -427,6 +436,7 @@
       color: var(--muted);
       border: 1px solid #e5e7eb;
       background: #f9fafb;
+      white-space: nowrap;
     }
 
     .pill-portao.p1 {
@@ -484,6 +494,7 @@
       border: 1px solid #e5e7eb;
       background: #ffffff;
       margin: 2px 2px;
+      white-space: nowrap;
     }
 
     .footer {
@@ -650,14 +661,19 @@
           <span id="status-pill" class="status-pill" style="display:none;"></span>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap;">
           <span style="font-size:0.75rem; color:var(--muted);">
             <strong id="total-rotas">0</strong> rotas carregadas
           </span>
-          <div style="display:flex; gap:6px; align-items:center;">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <button class="btn btn-outline" id="btn-copy-selected" disabled>
               <span class="icon">📋</span> Copiar selecionadas
             </button>
+            <!-- NOVO: revalidar apenas selecionadas -->
+            <button class="btn btn-outline" id="btn-revalidar-sel" disabled>
+              <span class="icon">♻</span> Revalidar selecionadas
+            </button>
+            <!-- Já existia: agora só para todas -->
             <button class="btn btn-outline" id="btn-revalidar">
               <span class="icon">✅</span> Revalidar todas
             </button>
@@ -734,12 +750,6 @@
       SUPABASE_URL,
       SUPABASE_ANON_KEY,
       {
-        global: {
-          headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-          }
-        },
         auth: {
           persistSession: false,
           autoRefreshToken: false
@@ -761,6 +771,7 @@
     const btnClear = document.getElementById("btn-clear");
     const btnCopySelected = document.getElementById("btn-copy-selected");
     const btnRevalidar = document.getElementById("btn-revalidar");
+    const btnRevalidarSel = document.getElementById("btn-revalidar-sel");
     const statusText = document.getElementById("status-text");
     const statusPill = document.getElementById("status-pill");
     const gridRotas = document.getElementById("grid-rotas");
@@ -846,11 +857,11 @@
         gridRotas.innerHTML = '<span style="font-size:0.8rem; color:var(--muted);">Nenhuma rota encontrada no Supabase. Importe a base para começar.</span>';
         totalRotasEl.textContent = "0";
         btnCopySelected.disabled = true;
+        btnRevalidarSel.disabled = true;
         return;
       }
 
       totalRotasEl.textContent = rotasDB.length.toString();
-      btnCopySelected.disabled = false;
 
       lettersSorted.forEach(letter => {
         const col = document.createElement("div");
@@ -877,7 +888,6 @@
         groups[letter].forEach(item => {
           const { num } = item;
           const isPar = !isNaN(num) && num % 2 === 0;
-          const isImpar = !isNaN(num) && num % 2 !== 0;
 
           const card = document.createElement("div");
           card.className = "rota-card";
@@ -889,7 +899,7 @@
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.dataset.id = item.id;
-          checkbox.disabled = item.usado;
+          checkbox.disabled = false; // pode selecionar usada p/ revalidar
           checkWrapper.appendChild(checkbox);
 
           // parte principal
@@ -901,7 +911,7 @@
 
           const codeSpan = document.createElement("span");
           codeSpan.className = "code";
-          codeSpan.textContent = `${item.roteLabel || ""}${letter}-${isNaN(num) ? "?" : num}`;
+          codeSpan.textContent = `${letter}-${isNaN(num) ? "?" : num}`;
 
           const parityBadge = document.createElement("span");
           parityBadge.className = "badge-paridade " + (isPar ? "badge-par" : "badge-impar");
@@ -956,12 +966,15 @@
 
     function attachGlobalCheckboxListener() {
       const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
+      const updateButtons = () => {
+        const anyChecked = Array.from(checkboxes).some(c => c.checked);
+        btnCopySelected.disabled = !anyChecked;
+        btnRevalidarSel.disabled = !anyChecked;
+      };
       checkboxes.forEach(cb => {
-        cb.addEventListener("change", () => {
-          const anyChecked = Array.from(checkboxes).some(c => c.checked);
-          btnCopySelected.disabled = !anyChecked;
-        });
+        cb.addEventListener("change", updateButtons);
       });
+      updateButtons();
     }
 
     // ==========================
@@ -1044,7 +1057,7 @@
       btnImport.disabled = true;
       showStatus("Enviando base para o Supabase...");
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("rotas_importadas")
         .insert(currentRowsFromFile);
 
@@ -1110,12 +1123,13 @@
       showStatus("Base limpa com sucesso.", "success");
     });
 
+    // REVALIDAR TODAS
     btnRevalidar.addEventListener("click", async () => {
       if (!rotasDB.length) return;
-      if (!confirm("Revalidar todas as letras? Todas voltarão a ficar disponíveis para copiar.")) {
+      if (!confirm("Revalidar TODAS as letras? Todas voltarão a ficar disponíveis para copiar.")) {
         return;
       }
-      showStatus("Revalidando letras...");
+      showStatus("Revalidando todas as letras...");
       const { error } = await supabase
         .from("rotas_importadas")
         .update({ usado: false, portao: null })
@@ -1130,6 +1144,37 @@
       rotasDB = rotasDB.map(r => ({ ...r, usado: false, portao: null }));
       renderRotas();
       showStatus("Todas as letras foram revalidadas.", "success");
+    });
+
+    // REVALIDAR SELECIONADAS
+    btnRevalidarSel.addEventListener("click", async () => {
+      const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
+      const selectedIds = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => parseInt(cb.dataset.id, 10));
+
+      if (!selectedIds.length) return;
+      if (!confirm("Revalidar apenas as letras selecionadas?")) return;
+
+      showStatus("Revalidando letras selecionadas...");
+
+      const { error } = await supabase
+        .from("rotas_importadas")
+        .update({ usado: false, portao: null })
+        .in("id", selectedIds);
+
+      if (error) {
+        console.error(error);
+        showStatus("Erro ao revalidar letras selecionadas: " + error.message, "error");
+        return;
+      }
+
+      rotasDB = rotasDB.map(r =>
+        selectedIds.includes(r.id) ? { ...r, usado: false, portao: null } : r
+      );
+
+      renderRotas();
+      showStatus("Letras selecionadas revalidadas.", "success");
     });
 
     btnCopySelected.addEventListener("click", () => {
@@ -1172,18 +1217,11 @@
         return;
       }
 
-      rotasDB = rotasDB.map(r => (
+      rotasDB = rotasDB.map(r =>
         ids.includes(r.id)
           ? { ...r, usado: true, portao }
           : r
-      ));
-
-      const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
-      checkboxes.forEach(cb => {
-        if (ids.includes(parseInt(cb.dataset.id, 10))) {
-          cb.checked = false;
-        }
-      });
+      );
 
       renderRotas();
       showStatus(`Copiado para Portão ${portao}. Letras marcadas como usadas.`, "success");

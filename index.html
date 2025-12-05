@@ -734,16 +734,16 @@
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
   {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
-    },
-    db: { schema: "public" },
     global: {
       headers: {
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`
       }
-    }
+    },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
+    },
+    db: { schema: "public" }
   }
 );
 
@@ -1193,3 +1193,4 @@
   </script>
 </body>
 </html>
+

@@ -730,17 +730,23 @@
     const SUPABASE_URL = "https://rtuxwydhgucdqbmyuhbt.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dXh3eWRoZ3VjZHFibXl1aGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MTQyOTEsImV4cCI6MjA3NTM5MDI5MX0._69KQdPbipke-jVmF_UEO3VAYaiEqpa1h81jUVTN684";
 
-   const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
-    },
-    db: { schema: "public" }
-  }
-);
+    const supabase = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY,
+      {
+        global: {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false
+        },
+        db: { schema: "public" }
+      }
+    );
 
     // ==========================
     // ESTADO GLOBAL
@@ -1188,5 +1194,3 @@
   </script>
 </body>
 </html>
-
-

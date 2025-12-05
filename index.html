@@ -119,16 +119,13 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       background: var(--card);
       color: var(--text);
       transition: all 0.18s ease;
       box-shadow: 0 0 0 0 transparent;
       white-space: nowrap;
-    }
-
-    .btn span.icon {
-      font-size: 0.9rem;
     }
 
     .btn-primary {
@@ -169,6 +166,20 @@
       cursor: default;
       transform: none;
       box-shadow: none;
+    }
+
+    .btn-mini {
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+    }
+
+    .btn-mini:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: #fff7ed;
     }
 
     .layout {
@@ -235,7 +246,6 @@
       display: inline-flex;
       gap: 6px;
       align-items: center;
-      white-space: nowrap;
     }
 
     .status-line {
@@ -315,15 +325,15 @@
       overflow: auto;
     }
 
-    /* CARD DA ROTA – corrigido para o botão "Copiar" ficar bonito */
     .rota-card {
       background: #ffffff;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
       padding: 4px 6px;
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 6px;
       align-items: center;
-      gap: 8px;
       font-size: 0.75rem;
       transition: background 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
     }
@@ -339,7 +349,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
     }
 
     .rota-check input {
@@ -350,8 +359,6 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      flex: 1;
-      min-width: 0; /* permite o ellipsis funcionar */
     }
 
     .rota-title {
@@ -363,7 +370,6 @@
 
     .rota-title span.code {
       font-size: 0.78rem;
-      white-space: nowrap;
     }
 
     .badge-paridade {
@@ -371,7 +377,6 @@
       border-radius: 999px;
       font-size: 0.68rem;
       font-weight: 500;
-      white-space: nowrap;
     }
 
     .badge-par {
@@ -399,20 +404,19 @@
       flex-direction: column;
       gap: 2px;
       align-items: flex-end;
-      flex-shrink: 0;
     }
 
     .btn-chip {
       border-radius: 999px;
       border: 1px solid var(--border);
-      padding: 1px 8px;
+      padding: 1px 7px;
       font-size: 0.68rem;
       font-weight: 500;
       background: #f9fafb;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
       transition: all 0.15s ease;
       white-space: nowrap;
     }
@@ -436,7 +440,6 @@
       color: var(--muted);
       border: 1px solid #e5e7eb;
       background: #f9fafb;
-      white-space: nowrap;
     }
 
     .pill-portao.p1 {
@@ -453,7 +456,7 @@
 
     .portoes-body {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       flex: 1;
       min-height: 0;
@@ -466,7 +469,7 @@
       background: #f9fafb;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
       min-height: 0;
     }
 
@@ -494,7 +497,14 @@
       border: 1px solid #e5e7eb;
       background: #ffffff;
       margin: 2px 2px;
-      white-space: nowrap;
+      font-size: 0.72rem;
+    }
+
+    .portao-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
     }
 
     .footer {
@@ -523,7 +533,7 @@
       font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
-    /* Modal simples */
+    /* Modal genérico */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -542,7 +552,7 @@
       background: #ffffff;
       border-radius: 16px;
       padding: 16px;
-      width: 320px;
+      width: 360px;
       max-width: calc(100% - 40px);
       box-shadow: 0 18px 45px rgba(15,23,42,0.35);
       display: flex;
@@ -589,6 +599,18 @@
       accent-color: var(--primary);
     }
 
+    .preview-text {
+      width: 100%;
+      min-height: 140px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 8px;
+      font-size: 0.78rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      resize: vertical;
+      background: #f9fafb;
+    }
+
     @media (max-width: 960px) {
       .layout {
         grid-template-columns: 1fr;
@@ -600,6 +622,9 @@
       .grid-rotas {
         grid-template-columns: repeat(2, minmax(0,1fr));
       }
+      .portoes-body {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 640px) {
@@ -610,6 +635,9 @@
         padding: 14px;
       }
       .grid-rotas {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .portoes-body {
         grid-template-columns: minmax(0,1fr);
       }
     }
@@ -627,10 +655,10 @@
       </div>
       <div class="app-header-actions">
         <button class="btn btn-outline" id="btn-reload">
-          <span class="icon">⟳</span> Atualizar dados
+          Atualizar dados
         </button>
         <button class="btn btn-danger" id="btn-clear">
-          <span class="icon">🗑</span> Limpar base
+          Limpar base
         </button>
       </div>
     </header>
@@ -646,12 +674,12 @@
           <div class="upload-group">
             <div class="file-input-wrapper">
               <label class="file-label">
-                <span class="icon">📂</span> Escolher arquivo .xlsx
+                Escolher arquivo .xlsx
               </label>
               <input type="file" id="file-input" accept=".xlsx,.xls">
             </div>
             <button class="btn btn-primary" id="btn-import" disabled>
-              <span class="icon">⬆</span> Importar &amp; salvar no Supabase
+              Importar &amp; salvar no Supabase
             </button>
           </div>
         </div>
@@ -667,21 +695,19 @@
           </span>
           <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <button class="btn btn-outline" id="btn-copy-selected" disabled>
-              <span class="icon">📋</span> Copiar selecionadas
+              Copiar selecionadas
             </button>
-            <!-- NOVO: revalidar apenas selecionadas -->
-            <button class="btn btn-outline" id="btn-revalidar-sel" disabled>
-              <span class="icon">♻</span> Revalidar selecionadas
+            <button class="btn btn-outline" id="btn-revalidar-selected" disabled>
+              Revalidar selecionadas
             </button>
-            <!-- Já existia: agora só para todas -->
-            <button class="btn btn-outline" id="btn-revalidar">
-              <span class="icon">✅</span> Revalidar todas
+            <button class="btn btn-outline" id="btn-revalidar-all">
+              Revalidar todas
             </button>
           </div>
         </div>
 
         <div class="grid-rotas" id="grid-rotas">
-          <!-- colunas A, B, C... vão aqui via JS -->
+          <!-- colunas A, B, C... via JS -->
         </div>
       </section>
 
@@ -700,11 +726,43 @@
             <div class="portao-lines" id="portao-1-lines">
               <span style="font-size:0.72rem; color:var(--muted);">Nenhuma letra enviada ainda.</span>
             </div>
+            <div class="portao-actions">
+              <button class="btn-mini btn-portao-copy" data-target="p1" data-mode="nome">
+                Copiar com nome
+              </button>
+              <button class="btn-mini btn-portao-copy" data-target="p1" data-mode="rotas">
+                Copiar só rotas
+              </button>
+            </div>
           </div>
+
           <div class="portao-card">
             <h3>Portão 2</h3>
             <div class="portao-lines" id="portao-2-lines">
               <span style="font-size:0.72rem; color:var(--muted);">Nenhuma letra enviada ainda.</span>
+            </div>
+            <div class="portao-actions">
+              <button class="btn-mini btn-portao-copy" data-target="p2" data-mode="nome">
+                Copiar com nome
+              </button>
+              <button class="btn-mini btn-portao-copy" data-target="p2" data-mode="rotas">
+                Copiar só rotas
+              </button>
+            </div>
+          </div>
+
+          <div class="portao-card">
+            <h3>Aguardar na fila</h3>
+            <div class="portao-lines" id="fila-lines">
+              <span style="font-size:0.72rem; color:var(--muted);">Nenhuma rota aguardando.</span>
+            </div>
+            <div class="portao-actions">
+              <button class="btn-mini btn-portao-copy" data-target="fila" data-mode="nome">
+                Copiar com nome
+              </button>
+              <button class="btn-mini btn-portao-copy" data-target="fila" data-mode="rotas">
+                Copiar só rotas
+              </button>
             </div>
           </div>
         </div>
@@ -719,7 +777,7 @@
     </main>
   </div>
 
-  <!-- Modal de escolha de portão -->
+  <!-- Modal de escolha de portão (para copiar da grade) -->
   <div class="modal-backdrop" id="modal-backdrop">
     <div class="modal">
       <h3>Enviar letras para qual portão?</h3>
@@ -734,7 +792,20 @@
       </div>
       <div class="modal-actions">
         <button class="btn btn-outline" id="btn-cancel-modal">Cancelar</button>
-        <button class="btn btn-primary" id="btn-confirm-modal">Confirmar &amp; copiar</button>
+        <button class="btn btn-primary" id="btn-confirm-modal">Confirmar e copiar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de preview para WhatsApp (portões / fila) -->
+  <div class="modal-backdrop" id="modal-preview">
+    <div class="modal">
+      <h3 id="preview-title">Pré-visualização</h3>
+      <p>Revise o texto abaixo. Ao copiar, é só colar direto no WhatsApp.</p>
+      <textarea id="preview-text" class="preview-text" readonly></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btn-close-preview">Fechar</button>
+        <button class="btn btn-primary" id="btn-copy-preview">Copiar texto</button>
       </div>
     </div>
   </div>
@@ -763,15 +834,16 @@
     // ==========================
     let currentRowsFromFile = []; // lido do .xlsx antes de enviar
     let rotasDB = [];             // vindo do Supabase
-    let pendingCopyIds = [];      // ids que vão para o modal
+    let pendingCopyIds = [];      // ids que vão para o modal (copiar grade)
+    let previewContent = "";      // conteúdo atual do modal de preview
 
     const fileInput = document.getElementById("file-input");
     const btnImport = document.getElementById("btn-import");
     const btnReload = document.getElementById("btn-reload");
     const btnClear = document.getElementById("btn-clear");
     const btnCopySelected = document.getElementById("btn-copy-selected");
-    const btnRevalidar = document.getElementById("btn-revalidar");
-    const btnRevalidarSel = document.getElementById("btn-revalidar-sel");
+    const btnRevalidarSelected = document.getElementById("btn-revalidar-selected");
+    const btnRevalidarAll = document.getElementById("btn-revalidar-all");
     const statusText = document.getElementById("status-text");
     const statusPill = document.getElementById("status-pill");
     const gridRotas = document.getElementById("grid-rotas");
@@ -781,8 +853,17 @@
     const btnCancelModal = document.getElementById("btn-cancel-modal");
     const btnConfirmModal = document.getElementById("btn-confirm-modal");
 
+    const modalPreview = document.getElementById("modal-preview");
+    const previewTitle = document.getElementById("preview-title");
+    const previewText = document.getElementById("preview-text");
+    const btnClosePreview = document.getElementById("btn-close-preview");
+    const btnCopyPreview = document.getElementById("btn-copy-preview");
+
     const portao1Lines = document.getElementById("portao-1-lines");
     const portao2Lines = document.getElementById("portao-2-lines");
+    const filaLines = document.getElementById("fila-lines");
+
+    const btnsPortaoCopy = document.querySelectorAll(".btn-portao-copy");
 
     // ==========================
     // HELPERS
@@ -827,6 +908,7 @@
     function renderPortoes() {
       const p1 = rotasDB.filter(r => r.portao === 1 && r.usado);
       const p2 = rotasDB.filter(r => r.portao === 2 && r.usado);
+      const fila = rotasDB.filter(r => !r.usado);
 
       function renderList(element, list) {
         if (!list.length) {
@@ -838,13 +920,29 @@
           const { letter, num } = parseRota(item.rota);
           const span = document.createElement("span");
           span.className = "portao-tag";
-          span.textContent = `${letter}-${num} • ${item.motorista_nome}`;
+          span.textContent = `${letter}-${isNaN(num) ? "?" : num} • ${item.motorista_nome}`;
+          element.appendChild(span);
+        });
+      }
+
+      function renderFila(element, list) {
+        if (!list.length) {
+          element.innerHTML = '<span style="font-size:0.72rem; color:var(--muted);">Nenhuma rota aguardando.</span>';
+          return;
+        }
+        element.innerHTML = "";
+        list.forEach(item => {
+          const { letter, num } = parseRota(item.rota);
+          const span = document.createElement("span");
+          span.className = "portao-tag";
+          span.textContent = `${letter}-${isNaN(num) ? "?" : num} • ${item.motorista_nome}`;
           element.appendChild(span);
         });
       }
 
       renderList(portao1Lines, p1);
       renderList(portao2Lines, p2);
+      renderFila(filaLines, fila);
     }
 
     function renderRotas() {
@@ -857,11 +955,13 @@
         gridRotas.innerHTML = '<span style="font-size:0.8rem; color:var(--muted);">Nenhuma rota encontrada no Supabase. Importe a base para começar.</span>';
         totalRotasEl.textContent = "0";
         btnCopySelected.disabled = true;
-        btnRevalidarSel.disabled = true;
+        btnRevalidarSelected.disabled = true;
         return;
       }
 
       totalRotasEl.textContent = rotasDB.length.toString();
+      btnCopySelected.disabled = false;
+      btnRevalidarSelected.disabled = false;
 
       lettersSorted.forEach(letter => {
         const col = document.createElement("div");
@@ -899,7 +999,7 @@
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.dataset.id = item.id;
-          checkbox.disabled = false; // pode selecionar usada p/ revalidar
+          checkbox.disabled = false;
           checkWrapper.appendChild(checkbox);
 
           // parte principal
@@ -933,11 +1033,11 @@
           const singleCopyBtn = document.createElement("button");
           singleCopyBtn.className = "btn-chip";
           singleCopyBtn.textContent = "Copiar";
-          if (item.usado) singleCopyBtn.disabled = true;
+          singleCopyBtn.disabled = item.usado === true;
 
           singleCopyBtn.addEventListener("click", () => {
             pendingCopyIds = [item.id];
-            openModal();
+            openPortaoModal();
           });
 
           actions.appendChild(singleCopyBtn);
@@ -966,46 +1066,79 @@
 
     function attachGlobalCheckboxListener() {
       const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
-      const updateButtons = () => {
-        const anyChecked = Array.from(checkboxes).some(c => c.checked);
-        btnCopySelected.disabled = !anyChecked;
-        btnRevalidarSel.disabled = !anyChecked;
-      };
       checkboxes.forEach(cb => {
-        cb.addEventListener("change", updateButtons);
+        cb.addEventListener("change", () => {
+          const anyChecked = Array.from(checkboxes).some(c => c.checked);
+          btnCopySelected.disabled = !anyChecked;
+          btnRevalidarSelected.disabled = !anyChecked;
+        });
       });
-      updateButtons();
     }
 
     // ==========================
-    // MODAL (Portão)
+    // MODAL (Portão - copiar da grade)
     // ==========================
-    function openModal() {
+    function openPortaoModal() {
       modalBackdrop.classList.add("active");
     }
 
-    function closeModal() {
+    function closePortaoModal() {
       modalBackdrop.classList.remove("active");
       pendingCopyIds = [];
     }
 
     btnCancelModal.addEventListener("click", () => {
-      closeModal();
+      closePortaoModal();
     });
 
     btnConfirmModal.addEventListener("click", async () => {
       const selectedPortao = document.querySelector("input[name='portao']:checked")?.value;
       const portao = parseInt(selectedPortao, 10) || 1;
       if (!pendingCopyIds.length) {
-        closeModal();
+        closePortaoModal();
         return;
       }
-      await handleCopy(pendingCopyIds, portao);
-      closeModal();
+      await handleCopyFromGrade(pendingCopyIds, portao);
+      closePortaoModal();
     });
 
     // ==========================
-    // AÇÕES PRINCIPAIS
+    // MODAL PREVIEW (WhatsApp)
+    // ==========================
+    function openPreviewModal(titulo, texto) {
+      previewTitle.textContent = titulo;
+      previewText.value = texto;
+      previewContent = texto;
+      modalPreview.classList.add("active");
+    }
+
+    function closePreviewModal() {
+      modalPreview.classList.remove("active");
+      previewContent = "";
+      previewText.value = "";
+    }
+
+    btnClosePreview.addEventListener("click", () => {
+      closePreviewModal();
+    });
+
+    btnCopyPreview.addEventListener("click", async () => {
+      if (!previewContent) {
+        closePreviewModal();
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(previewContent);
+        showStatus("Texto copiado para a área de transferência.", "success");
+      } catch (err) {
+        console.warn("Falha ao copiar do preview:", err);
+        alert("Não consegui copiar automaticamente. Selecione e copie o texto manualmente.");
+      }
+      closePreviewModal();
+    });
+
+    // ==========================
+    // AÇÕES PRINCIPAIS - IMPORTAR
     // ==========================
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
@@ -1040,7 +1173,9 @@
           .map(row => ({
             motorista_id: row["ID"].toString().trim(),
             motorista_nome: (row["DRIVER NAME"] || "").toString().trim(),
-            rota: row["ROTA"].toString().trim()
+            rota: row["ROTA"].toString().trim(),
+            usado: false,
+            portao: null
           }));
 
         showStatus(`Arquivo lido: ${currentRowsFromFile.length} linhas válidas.`);
@@ -1123,10 +1258,12 @@
       showStatus("Base limpa com sucesso.", "success");
     });
 
-    // REVALIDAR TODAS
-    btnRevalidar.addEventListener("click", async () => {
+    // ==========================
+    // REVALIDAR
+    // ==========================
+    btnRevalidarAll.addEventListener("click", async () => {
       if (!rotasDB.length) return;
-      if (!confirm("Revalidar TODAS as letras? Todas voltarão a ficar disponíveis para copiar.")) {
+      if (!confirm("Revalidar TODAS as letras? Todas voltarão a ficar disponíveis.")) {
         return;
       }
       showStatus("Revalidando todas as letras...");
@@ -1146,15 +1283,16 @@
       showStatus("Todas as letras foram revalidadas.", "success");
     });
 
-    // REVALIDAR SELECIONADAS
-    btnRevalidarSel.addEventListener("click", async () => {
+    btnRevalidarSelected.addEventListener("click", async () => {
       const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
       const selectedIds = Array.from(checkboxes)
         .filter(cb => cb.checked)
         .map(cb => parseInt(cb.dataset.id, 10));
 
       if (!selectedIds.length) return;
-      if (!confirm("Revalidar apenas as letras selecionadas?")) return;
+      if (!confirm("Revalidar apenas as letras selecionadas?")) {
+        return;
+      }
 
       showStatus("Revalidando letras selecionadas...");
 
@@ -1165,18 +1303,23 @@
 
       if (error) {
         console.error(error);
-        showStatus("Erro ao revalidar letras selecionadas: " + error.message, "error");
+        showStatus("Erro ao revalidar selecionadas: " + error.message, "error");
         return;
       }
 
       rotasDB = rotasDB.map(r =>
-        selectedIds.includes(r.id) ? { ...r, usado: false, portao: null } : r
+        selectedIds.includes(r.id)
+          ? { ...r, usado: false, portao: null }
+          : r
       );
 
       renderRotas();
       showStatus("Letras selecionadas revalidadas.", "success");
     });
 
+    // ==========================
+    // COPIAR SELECIONADAS (GRADE)
+    // ==========================
     btnCopySelected.addEventListener("click", () => {
       const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
       const selectedIds = Array.from(checkboxes)
@@ -1185,10 +1328,10 @@
 
       if (!selectedIds.length) return;
       pendingCopyIds = selectedIds;
-      openModal();
+      openPortaoModal();
     });
 
-    async function handleCopy(ids, portao) {
+    async function handleCopyFromGrade(ids, portao) {
       const itens = rotasDB.filter(r => ids.includes(r.id));
       if (!itens.length) return;
 
@@ -1200,7 +1343,7 @@
         .join("\n");
 
       try {
-        await navigator.clipboard.writeText(texto);
+        await navigator.clipboard.writeText(`Portão ${portao}\n${texto}`);
       } catch (err) {
         console.warn("Falha ao copiar para a área de transferência:", err);
         alert("Não consegui copiar automaticamente. Mas as letras já foram marcadas como usadas.");
@@ -1226,6 +1369,49 @@
       renderRotas();
       showStatus(`Copiado para Portão ${portao}. Letras marcadas como usadas.`, "success");
     }
+
+    // ==========================
+    // COPIAR PORTÕES / FILA (PREVIEW MODAL)
+    // ==========================
+    function buildTextoGrupo(lista, titulo, modo) {
+      const linhas = lista.map(r => {
+        const { letter, num } = parseRota(r.rota);
+        if (modo === "nome") {
+          return `${letter}-${isNaN(num) ? "?" : num} • ${r.motorista_nome}`;
+        }
+        return `${letter}-${isNaN(num) ? "?" : num}`;
+      });
+      return `${titulo}\n${linhas.join("\n")}`;
+    }
+
+    btnsPortaoCopy.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target; // p1, p2, fila
+        const mode = btn.dataset.mode;     // nome ou rotas
+
+        let lista = [];
+        let titulo = "";
+
+        if (target === "p1") {
+          lista = rotasDB.filter(r => r.portao === 1 && r.usado);
+          titulo = "Portão 1";
+        } else if (target === "p2") {
+          lista = rotasDB.filter(r => r.portao === 2 && r.usado);
+          titulo = "Portão 2";
+        } else {
+          lista = rotasDB.filter(r => !r.usado);
+          titulo = "Aguardar na fila";
+        }
+
+        if (!lista.length) {
+          alert("Não há letras neste grupo.");
+          return;
+        }
+
+        const texto = buildTextoGrupo(lista, titulo, mode);
+        openPreviewModal(titulo, texto);
+      });
+    });
 
     // Carregar dados logo que abrir a página
     loadRotasFromDB();

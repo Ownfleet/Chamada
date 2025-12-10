@@ -347,7 +347,8 @@
       gap: 6px;
       align-items: center;
       font-size: 0.75rem;
-      transition: background 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+      transition: background 0.16s ease, border-color 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease, transform 0.1s ease;
+      cursor: pointer;
     }
 
     .rota-card.used {
@@ -355,6 +356,15 @@
       border-style: dashed;
       border-color: #d1d5db;
       opacity: 0.65;
+      cursor: default;
+    }
+
+    /* card selecionado */
+    .rota-card.selected {
+      background: #ffe8e0 !important;
+      border: 2px solid var(--primary) !important;
+      box-shadow: 0 0 10px rgba(255, 87, 34, 0.35);
+      transform: scale(1.01);
     }
 
     .rota-check {
@@ -363,8 +373,13 @@
       justify-content: center;
     }
 
+    /* esconde visualmente o checkbox, mas mantém funcionamento */
     .rota-check input {
       accent-color: var(--primary);
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
     }
 
     .rota-main {
@@ -937,7 +952,8 @@
       }
 
       totalRotasEl.textContent = baseList.length.toString();
-      btnCopySelected.disabled = false;
+      // botão começa desabilitado; será habilitado ao selecionar
+      btnCopySelected.disabled = true;
 
       lettersSorted.forEach(letter => {
         const col = document.createElement("div");
@@ -1013,7 +1029,8 @@
           singleCopyBtn.textContent = "Copiar";
           if (item.usado) singleCopyBtn.disabled = true;
 
-          singleCopyBtn.addEventListener("click", () => {
+          singleCopyBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // não interfere na seleção do card
             pendingCopyIds = [item.id];
             openModal();
           });
@@ -1048,12 +1065,33 @@
 
     function attachGlobalCheckboxListener() {
       const checkboxes = gridRotas.querySelectorAll(".rota-check input[type='checkbox']");
+
+      function updateCopyButtonState() {
+        const anyChecked = Array.from(checkboxes).some(c => c.checked);
+        btnCopySelected.disabled = !anyChecked;
+      }
+
       checkboxes.forEach(cb => {
+        const card = cb.closest(".rota-card");
+        if (!card) return;
+
+        // clique no card seleciona/deseleciona (exceto se usado)
+        card.addEventListener("click", () => {
+          if (cb.disabled) return; // não mexe em carta já usada
+          cb.checked = !cb.checked;
+          card.classList.toggle("selected", cb.checked);
+          updateCopyButtonState();
+        });
+
+        // caso o checkbox seja alterado por algum motivo, mantém visual
         cb.addEventListener("change", () => {
-          const anyChecked = Array.from(checkboxes).some(c => c.checked);
-          btnCopySelected.disabled = !anyChecked;
+          card.classList.toggle("selected", cb.checked);
+          updateCopyButtonState();
         });
       });
+
+      // ao renderizar, garante estado inicial do botão
+      updateCopyButtonState();
     }
 
     function setupLetterFilterBar() {
@@ -1298,9 +1336,14 @@
       checkboxes.forEach(cb => {
         if (ids.includes(parseInt(cb.dataset.id, 10))) {
           cb.checked = false;
+          const card = cb.closest(".rota-card");
+          if (card) {
+            card.classList.remove("selected");
+          }
         }
       });
 
+      // depois de marcar usadas, recarrega visual
       renderRotas();
       showStatus(`Copiado (${header}) para colar no WhatsApp.`, "success");
     }
